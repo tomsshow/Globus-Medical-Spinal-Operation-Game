@@ -205,21 +205,23 @@
 
         <aside class="tray-panel" aria-label="Product prompt">
           <div class="tray-header">
-            <p class="eyebrow">Current product family</p>
-            <div class="difficulty" id="difficultyPips" aria-hidden="true"></div>
+            <div class="tray-title">
+              <p class="eyebrow">Current product</p>
+              <h2 id="productName">MARS retractor systems</h2>
+              <span class="family-pill" id="familyPill">Access tools</span>
+            </div>
+            <div class="attempts" id="attemptPips" aria-label="Wrong attempts for this product"></div>
           </div>
 
           <article class="prompt-card">
-            <span class="family-pill" id="familyPill">Access tools</span>
-            <h2 id="productName">MARS retractor systems</h2>
             <figure class="product-visual" id="productVisual">
               <a id="productSource" href="https://www.globusmedical.com/" target="_blank" rel="noreferrer">
                 <img id="productImage" src="" alt="">
               </a>
+              <p id="productClue">Adjustable door frames that keep tissue gently moved aside.</p>
               <figcaption id="productCaption">Official Globus product image</figcaption>
             </figure>
             <div class="approach-panel" id="approachPanel" aria-label="Surgical approach cue"></div>
-            <p id="productClue">Adjustable door frames that keep tissue gently moved aside.</p>
             <div class="examples" id="productExamples" aria-label="Product examples"></div>
           </article>
 
@@ -228,16 +230,58 @@
           </div>
 
           <div class="controls">
-            <button class="tool-button" type="button" id="hintButton">Hint</button>
-            <button class="tool-button" type="button" id="skipButton">Skip</button>
-            <button class="tool-button primary" type="button" id="nextButton" hidden>Next</button>
-            <button class="tool-button" type="button" id="restartButton">Restart</button>
+            <button class="tool-button hint-action" type="button" id="hintButton">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M9 18h6"></path>
+                  <path d="M10 22h4"></path>
+                  <path d="M15 14c.2-1 .7-1.7 1.5-2.5A5 5 0 1 0 7.5 11.5C8.3 12.3 8.8 13 9 14"></path>
+                </svg>
+              </span>
+              <span>Hint</span>
+            </button>
+            <button class="tool-button later-action" type="button" id="laterButton">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7v5l3 2"></path>
+                </svg>
+              </span>
+              <span>Later</span>
+            </button>
+            <button class="tool-button skip-action" type="button" id="skipButton">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M5 5v14l10-7Z"></path>
+                  <path d="M19 5v14"></path>
+                </svg>
+              </span>
+              <span>Skip</span>
+            </button>
+            <button class="tool-button primary next-action" type="button" id="nextButton" hidden>
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M5 12h14"></path>
+                  <path d="m13 6 6 6-6 6"></path>
+                </svg>
+              </span>
+              <span>Next</span>
+            </button>
+            <button class="tool-button restart-action" type="button" id="restartButton">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M3 12a9 9 0 1 0 3-6.7"></path>
+                  <path d="M3 4v6h6"></path>
+                </svg>
+              </span>
+              <span>Restart</span>
+            </button>
           </div>
 
-          <div class="legend">
-            <h3>Anatomy slots</h3>
+          <details class="legend" id="legendDrawer">
+            <summary class="legend-summary">Anatomy slots</summary>
             <div id="legendList" class="legend-list"></div>
-          </div>
+          </details>
         </aside>
       </section>
 

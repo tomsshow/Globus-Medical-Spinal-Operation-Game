@@ -62,6 +62,7 @@ button {
 
 .hud h1,
 .board-title h2,
+.tray-title h2,
 .prompt-card h2,
 .completion-panel h2 {
   margin: 0;
@@ -156,6 +157,15 @@ button {
 
 .board-title h2 {
   font-size: 1.35rem;
+}
+
+.tray-title {
+  min-width: 0;
+}
+
+.tray-title h2 {
+  font-size: 1.8rem;
+  line-height: 1.08;
 }
 
 .pulse-light {
@@ -287,22 +297,22 @@ button {
   animation: boardBuzz 0.34s ease;
 }
 
-.difficulty {
+.attempts {
   display: flex;
   gap: 5px;
   align-items: center;
   min-height: 14px;
 }
 
-.difficulty span {
+.attempts span {
   width: 10px;
   height: 10px;
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: #f8d56a;
+  background: #fffdf5;
 }
 
-.difficulty span.on {
+.attempts span.used {
   background: var(--red);
 }
 
@@ -313,7 +323,7 @@ button {
 .family-pill {
   display: inline-flex;
   max-width: 100%;
-  margin-bottom: 12px;
+  margin: 0 0 12px;
   padding: 6px 9px;
   border: 2px solid var(--line);
   border-radius: 999px;
@@ -322,6 +332,10 @@ button {
   font-size: 0.78rem;
   font-weight: 850;
   line-height: 1.1;
+}
+
+.tray-title .family-pill {
+  margin: 8px 0 0;
 }
 
 .prompt-card h2 {
@@ -340,8 +354,11 @@ button {
 .product-visual {
   display: grid;
   grid-template-columns: 128px 1fr;
+  grid-template-areas:
+    "image clue"
+    "caption clue";
   gap: 12px;
-  align-items: center;
+  align-items: start;
   margin: 0 0 13px;
   padding: 10px;
   border: 2px solid rgba(106, 59, 64, 0.35);
@@ -351,6 +368,7 @@ button {
 
 .product-visual a {
   display: block;
+  grid-area: image;
   min-width: 0;
 }
 
@@ -364,17 +382,29 @@ button {
 }
 
 .product-visual figcaption {
+  grid-area: caption;
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 750;
   line-height: 1.3;
 }
 
-.product-visual.is-missing img {
+.product-visual #productClue {
+  grid-area: clue;
+  align-self: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.product-visual.is-missing a {
   display: none;
 }
 
 .product-visual.is-missing {
+  grid-template-areas:
+    "clue"
+    "caption";
   grid-template-columns: 1fr;
 }
 
@@ -487,6 +517,10 @@ button {
 }
 
 .tool-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   min-height: 44px;
   padding: 9px 10px;
   border: 2px solid var(--line);
@@ -498,8 +532,37 @@ button {
   box-shadow: 0 4px 0 rgba(84, 29, 39, 0.22);
 }
 
+.tool-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
+}
+
+.button-icon {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+
+.button-icon svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+}
+
 .tool-button:hover {
   transform: translateY(-1px);
+}
+
+.tool-button:disabled:hover {
+  transform: none;
 }
 
 .tool-button:active {
@@ -517,21 +580,78 @@ button {
   color: #ffffff;
 }
 
+.hint-action {
+  border-color: #af7a55;
+  background: #fff4d0;
+  color: #5b4335;
+}
+
+.later-action {
+  border-color: var(--blue);
+  background: #edf6ff;
+  color: #174f73;
+}
+
+.skip-action {
+  border-color: var(--red-dark);
+  background: #fff0ec;
+  color: var(--red-dark);
+}
+
+.restart-action {
+  border-color: #6a4e7c;
+  background: #f4eff8;
+  color: #463052;
+}
+
 .legend {
   border-top: 2px dashed rgba(106, 59, 64, 0.35);
   padding-top: 12px;
 }
 
-.legend h3 {
+.legend-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin: 0 0 8px;
+  color: var(--ink);
   font-size: 0.92rem;
+  font-weight: 850;
+  line-height: 1.2;
   text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+
+.legend-summary::-webkit-details-marker {
+  display: none;
+}
+
+.legend-summary::after {
+  content: "-";
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  color: var(--teal-dark);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.legend[open] .legend-summary::after {
+  content: "-";
 }
 
 .legend-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
+}
+
+.legend:not([open]) > .legend-list {
+  display: grid;
 }
 
 .legend-item {
@@ -628,6 +748,9 @@ button {
   .hud {
     align-items: stretch;
     flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 14px;
   }
 
   .stats {
@@ -637,10 +760,16 @@ button {
 
   .game-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .tray-panel {
+    order: -1;
   }
 
   .patient-board {
-    min-height: 560px;
+    width: min(100%, 480px);
+    min-height: 0;
   }
 }
 
@@ -650,8 +779,19 @@ button {
     padding-top: 10px;
   }
 
+  .hud {
+    gap: 9px;
+    margin-bottom: 10px;
+    padding: 10px;
+  }
+
+  .hud .eyebrow {
+    margin-bottom: 3px;
+    font-size: 0.68rem;
+  }
+
   .hud h1 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
   }
 
   .stats,
@@ -660,15 +800,49 @@ button {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .stats {
+    gap: 6px;
+  }
+
+  .stat {
+    padding: 7px 8px;
+    text-align: center;
+  }
+
+  .stat span {
+    font-size: 0.56rem;
+  }
+
+  .stat strong {
+    font-size: 1.08rem;
+  }
+
   .board-panel,
   .tray-panel,
-  .hud,
   .completion-panel {
     padding: 12px;
   }
 
+  .board-title,
+  .tray-header {
+    margin-bottom: 9px;
+  }
+
+  .board-title h2 {
+    font-size: 1.15rem;
+  }
+
+  .tray-title h2 {
+    font-size: 1.45rem;
+  }
+
+  .pulse-light {
+    width: 34px;
+    height: 34px;
+  }
+
   .patient-board {
-    min-height: 500px;
+    width: min(100%, 340px);
   }
 
   .hotspot {
@@ -680,12 +854,9 @@ button {
     font-size: 0.66rem;
   }
 
-  .prompt-card h2 {
-    font-size: 1.45rem;
-  }
-
   .product-visual {
     grid-template-columns: 104px 1fr;
+    gap: 9px;
   }
 
   .product-visual img {
@@ -693,10 +864,59 @@ button {
     height: 82px;
   }
 
+  .product-visual figcaption {
+    font-size: 0.62rem;
+    line-height: 1.15;
+  }
+
+  .product-visual #productClue {
+    font-size: 0.86rem;
+    line-height: 1.3;
+  }
+
+  .legend {
+    padding-top: 8px;
+  }
+
+  .legend-summary {
+    margin-bottom: 0;
+    padding: 9px 0;
+  }
+
+  .legend-summary::after {
+    content: "+";
+  }
+
+  .legend:not([open]) > .legend-list {
+    display: none;
+  }
+
+  .legend[open] .legend-summary {
+    margin-bottom: 8px;
+  }
+
+  .legend[open] .legend-summary::after {
+    content: "-";
+  }
+
 }
 
 @media (max-width: 420px) {
+  .patient-board {
+    width: min(100%, 310px);
+  }
+
   .hotspot-label {
-    display: none;
+    width: 74px;
+    padding: 3px 4px;
+    border-width: 1px;
+    font-size: 0.5rem;
+    line-height: 1.05;
+  }
+
+  .hotspot-label::before {
+    width: 5px;
+    height: 5px;
+    margin-right: 3px;
   }
 }

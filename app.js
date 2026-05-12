@@ -480,8 +480,18 @@ const state = {
   score: 0,
   streak: 0,
   buzzes: 0,
+  attemptMisses: 0,
   answered: false,
   hinted: false
+};
+
+const maxAttempts = 3;
+const hapticPatterns = {
+  correct: [24, 32, 24],
+  wrong: 75,
+  skip: [55, 35, 55],
+  later: 35,
+  autoLater: [80, 45, 80, 45, 130]
 };
 
 const elements = {
@@ -500,6 +510,7 @@ const elements = {
   productExamples: document.querySelector("#productExamples"),
   feedback: document.querySelector("#feedback"),
   hintButton: document.querySelector("#hintButton"),
+  laterButton: document.querySelector("#laterButton"),
   skipButton: document.querySelector("#skipButton"),
   nextButton: document.querySelector("#nextButton"),
   restartButton: document.querySelector("#restartButton"),
@@ -509,7 +520,8 @@ const elements = {
   completionCopy: document.querySelector("#completionCopy"),
   patientBoard: document.querySelector("#patientBoard"),
   pulseLight: document.querySelector("#pulseLight"),
-  difficultyPips: document.querySelector("#difficultyPips"),
+  attemptPips: document.querySelector("#attemptPips"),
+  legendDrawer: document.querySelector("#legendDrawer"),
   legendList: document.querySelector("#legendList"),
   hotspots: Array.from(document.querySelectorAll(".hotspot")),
   hotspotLabels: Array.from(document.querySelectorAll(".hotspot-label"))
@@ -528,6 +540,18 @@ function currentCard() {
   return state.deck[state.index];
 }
 
+function playHaptic(patternName) {
+  if (!("vibrate" in navigator)) return;
+  const mobileLike = window.matchMedia("(max-width: 940px), (pointer: coarse)").matches;
+  if (!mobileLike) return;
+
+  try {
+    navigator.vibrate(hapticPatterns[patternName]);
+  } catch {
+    // Vibration support varies by mobile browser; ignore unsupported calls.
+  }
+}
+
 function renderLegend() {
   elements.legendList.innerHTML = Object.entries(targets)
     .map(([id, target]) => `
@@ -542,9 +566,24 @@ function renderLegend() {
     .join("");
 }
 
-function renderDifficulty(level) {
-  elements.difficultyPips.innerHTML = [1, 2, 3]
-    .map((pip) => `<span class="${pip <= level ? "on" : ""}"></span>`)
+function setupLegendDrawer() {
+  const mobileLegend = window.matchMedia("(max-width: 620px)");
+  const syncLegendDefault = () => {
+    elements.legendDrawer.open = !mobileLegend.matches;
+  };
+
+  syncLegendDefault();
+  if (mobileLegend.addEventListener) {
+    mobileLegend.addEventListener("change", syncLegendDefault);
+    return;
+  }
+
+  mobileLegend.addListener(syncLegendDefault);
+}
+
+function renderAttempts() {
+  elements.attemptPips.innerHTML = [1, 2, 3]
+    .map((pip) => `<span class="${pip <= state.attemptMisses ? "used" : ""}"></span>`)
     .join("");
 }
 
@@ -610,10 +649,13 @@ function renderCard() {
   const card = currentCard();
   state.answered = false;
   state.hinted = false;
+  state.attemptMisses = 0;
   clearHotspotStates();
   elements.completionPanel.hidden = true;
   elements.nextButton.hidden = true;
+  elements.laterButton.hidden = false;
   elements.hintButton.disabled = false;
+  elements.laterButton.disabled = state.deck.length - state.index <= 1;
   elements.skipButton.disabled = false;
   elements.familyPill.textContent = card.family;
   elements.productName.textContent = card.product;
@@ -621,7 +663,7 @@ function renderCard() {
   renderApproach(card.approach);
   elements.productClue.textContent = card.clue;
   elements.productExamples.innerHTML = card.examples.map((example) => `<span>${example}</span>`).join("");
-  renderDifficulty(card.difficulty);
+  renderAttempts();
   setFeedback("Choose the matching anatomy slot on the board.");
   renderStats();
 }
@@ -679,16 +721,27 @@ function handleGuess(targetId) {
     state.score += earned;
     state.streak += 1;
     state.answered = true;
+    playHaptic("correct");
     lockCorrect(targetId);
     setFeedback(`Correct: ${card.product} maps to the ${correctTarget.label.toLowerCase()}. Approach cue: ${card.approach.title}. ${correctTarget.teach} +${earned}`, "good");
     elements.nextButton.hidden = false;
+    elements.laterButton.hidden = true;
+    elements.laterButton.disabled = true;
     elements.hintButton.disabled = true;
     elements.skipButton.disabled = true;
   } else {
+    state.attemptMisses += 1;
     state.score = Math.max(0, state.score - 25);
     state.streak = 0;
     state.buzzes += 1;
+    playHaptic(state.attemptMisses >= maxAttempts ? "autoLater" : "wrong");
     flashWrong(targetId);
+    renderAttempts();
+    if (state.attemptMisses >= maxAttempts) {
+      deferCard(`${card.product} is saved for later after three misses. Try this product family again near the end of the tray.`, { vibrate: false });
+      renderStats();
+      return;
+    }
     setFeedback(`Buzz: that is the ${guessedTarget.label.toLowerCase()}. Route cue: ${card.approach.title}. Look for ${correctTarget.anatomy}.`, "bad");
   }
 
@@ -711,12 +764,33 @@ function skipCard() {
   state.streak = 0;
   state.buzzes += 1;
   state.answered = true;
+  playHaptic("skip");
   lockCorrect(card.target);
   setFeedback(`Skipped: ${card.product} belongs at the ${target.label.toLowerCase()}. Approach cue: ${card.approach.title}. ${target.teach}`, "bad");
   elements.nextButton.hidden = false;
+  elements.laterButton.hidden = true;
+  elements.laterButton.disabled = true;
   elements.hintButton.disabled = true;
   elements.skipButton.disabled = true;
   renderStats();
+}
+
+function deferCard(message, options = {}) {
+  if (state.answered) return;
+
+  if (state.deck.length - state.index <= 1) {
+    elements.laterButton.disabled = true;
+    setFeedback("This is the last product in the tray, so there is no later slot.");
+    return;
+  }
+
+  const [card] = state.deck.splice(state.index, 1);
+  state.deck.push(card);
+  if (options.vibrate !== false) {
+    playHaptic("later");
+  }
+  renderCard();
+  setFeedback(message || `${card.product} is saved for later in the game. Try this product family next.`);
 }
 
 function showCompletion() {
@@ -731,6 +805,8 @@ function showCompletion() {
   });
   setFeedback("Case complete. Restart to reshuffle the tray.");
   elements.nextButton.hidden = true;
+  elements.laterButton.hidden = true;
+  elements.laterButton.disabled = true;
   elements.hintButton.disabled = true;
   elements.skipButton.disabled = true;
   elements.pulseLight.classList.remove("correct", "wrong");
@@ -752,6 +828,7 @@ function restartGame() {
   state.score = 0;
   state.streak = 0;
   state.buzzes = 0;
+  state.attemptMisses = 0;
   renderCard();
 }
 
@@ -760,10 +837,12 @@ elements.hotspots.forEach((hotspot) => {
 });
 
 elements.hintButton.addEventListener("click", showHint);
+elements.laterButton.addEventListener("click", () => deferCard());
 elements.skipButton.addEventListener("click", skipCard);
 elements.nextButton.addEventListener("click", nextCard);
 elements.restartButton.addEventListener("click", restartGame);
 elements.playAgainButton.addEventListener("click", restartGame);
 
 renderLegend();
+setupLegendDrawer();
 restartGame();
