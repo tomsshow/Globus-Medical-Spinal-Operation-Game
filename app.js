@@ -509,6 +509,7 @@ const elements = {
   productClue: document.querySelector("#productClue"),
   productExamples: document.querySelector("#productExamples"),
   feedback: document.querySelector("#feedback"),
+  trayPanel: document.querySelector(".tray-panel"),
   hintButton: document.querySelector("#hintButton"),
   laterButton: document.querySelector("#laterButton"),
   skipButton: document.querySelector("#skipButton"),
@@ -552,6 +553,33 @@ function playHaptic(patternName) {
   }
 }
 
+function isMobileLayout() {
+  return window.matchMedia("(max-width: 940px)").matches;
+}
+
+function scrollToPrompt() {
+  if (!isMobileLayout()) return;
+
+  window.requestAnimationFrame(() => {
+    elements.trayPanel.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  });
+}
+
+function updateFloatingFeedback() {
+  const useFloatingFeedback = window.matchMedia("(max-width: 620px)").matches;
+  if (!useFloatingFeedback) {
+    elements.feedback.classList.remove("is-floating");
+    return;
+  }
+
+  const boardBounds = elements.patientBoard.getBoundingClientRect();
+  const boardIsVisible = boardBounds.top < window.innerHeight && boardBounds.bottom > 0;
+  elements.feedback.classList.toggle("is-floating", boardIsVisible);
+}
+
 function renderLegend() {
   elements.legendList.innerHTML = Object.entries(targets)
     .map(([id, target]) => `
@@ -590,6 +618,7 @@ function renderAttempts() {
 function setFeedback(message, type = "") {
   elements.feedback.className = `feedback ${type}`.trim();
   elements.feedback.textContent = message;
+  updateFloatingFeedback();
 }
 
 function clearHotspotStates() {
@@ -645,7 +674,7 @@ function renderApproach(approach) {
   `;
 }
 
-function renderCard() {
+function renderCard(options = {}) {
   const card = currentCard();
   state.answered = false;
   state.hinted = false;
@@ -666,6 +695,9 @@ function renderCard() {
   renderAttempts();
   setFeedback("Choose the matching anatomy slot on the board.");
   renderStats();
+  if (options.scrollToPrompt) {
+    scrollToPrompt();
+  }
 }
 
 function renderStats() {
@@ -729,6 +761,7 @@ function handleGuess(targetId) {
     elements.laterButton.disabled = true;
     elements.hintButton.disabled = true;
     elements.skipButton.disabled = true;
+    scrollToPrompt();
   } else {
     state.attemptMisses += 1;
     state.score = Math.max(0, state.score - 25);
@@ -773,6 +806,7 @@ function skipCard() {
   elements.hintButton.disabled = true;
   elements.skipButton.disabled = true;
   renderStats();
+  scrollToPrompt();
 }
 
 function deferCard(message, options = {}) {
@@ -789,7 +823,7 @@ function deferCard(message, options = {}) {
   if (options.vibrate !== false) {
     playHaptic("later");
   }
-  renderCard();
+  renderCard({ scrollToPrompt: true });
   setFeedback(message || `${card.product} is saved for later in the game. Try this product family next.`);
 }
 
@@ -819,17 +853,17 @@ function nextCard() {
     showCompletion();
     return;
   }
-  renderCard();
+  renderCard({ scrollToPrompt: true });
 }
 
-function restartGame() {
+function restartGame(options = {}) {
   state.deck = shuffle(productCards);
   state.index = 0;
   state.score = 0;
   state.streak = 0;
   state.buzzes = 0;
   state.attemptMisses = 0;
-  renderCard();
+  renderCard(options);
 }
 
 elements.hotspots.forEach((hotspot) => {
@@ -840,9 +874,12 @@ elements.hintButton.addEventListener("click", showHint);
 elements.laterButton.addEventListener("click", () => deferCard());
 elements.skipButton.addEventListener("click", skipCard);
 elements.nextButton.addEventListener("click", nextCard);
-elements.restartButton.addEventListener("click", restartGame);
-elements.playAgainButton.addEventListener("click", restartGame);
+elements.restartButton.addEventListener("click", () => restartGame({ scrollToPrompt: true }));
+elements.playAgainButton.addEventListener("click", () => restartGame({ scrollToPrompt: true }));
+window.addEventListener("scroll", updateFloatingFeedback, { passive: true });
+window.addEventListener("resize", updateFloatingFeedback);
 
 renderLegend();
 setupLegendDrawer();
 restartGame();
+updateFloatingFeedback();
