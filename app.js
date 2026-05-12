@@ -526,6 +526,7 @@ const elements = {
   attemptPips: document.querySelector("#attemptPips"),
   legendDrawer: document.querySelector("#legendDrawer"),
   legendList: document.querySelector("#legendList"),
+  anatomyCues: Array.from(document.querySelectorAll("[data-cue]")),
   hotspots: Array.from(document.querySelectorAll(".hotspot")),
   hotspotLabels: Array.from(document.querySelectorAll(".hotspot-label"))
 };
@@ -649,10 +650,20 @@ function setFeedback(message, type = "") {
   updateFloatingFeedback();
 }
 
+function anatomyCueFor(targetId) {
+  return elements.anatomyCues.find((cue) => cue.dataset.cue === targetId);
+}
+
 function clearHotspotStates() {
   elements.hotspots.forEach((hotspot) => {
     hotspot.classList.remove("correct", "wrong");
-    hotspot.disabled = false;
+    hotspot.setAttribute("aria-disabled", "false");
+    if ("disabled" in hotspot) {
+      hotspot.disabled = false;
+    }
+  });
+  elements.anatomyCues.forEach((cue) => {
+    cue.classList.remove("correct", "wrong");
   });
   elements.hotspotLabels.forEach((label) => {
     label.classList.remove("correct", "wrong");
@@ -739,9 +750,14 @@ function renderStats() {
 function flashWrong(targetId) {
   const hotspot = elements.hotspots.find((item) => item.dataset.target === targetId);
   const label = elements.hotspotLabels.find((item) => item.dataset.label === targetId);
+  const cue = anatomyCueFor(targetId);
   if (hotspot) {
     hotspot.classList.add("wrong");
     window.setTimeout(() => hotspot.classList.remove("wrong"), 430);
+  }
+  if (cue) {
+    cue.classList.add("wrong");
+    window.setTimeout(() => cue.classList.remove("wrong"), 430);
   }
   if (label) {
     label.classList.add("wrong");
@@ -757,8 +773,14 @@ function flashWrong(targetId) {
 
 function lockCorrect(targetId) {
   elements.hotspots.forEach((hotspot) => {
-    hotspot.disabled = true;
+    hotspot.setAttribute("aria-disabled", "true");
+    if ("disabled" in hotspot) {
+      hotspot.disabled = true;
+    }
     hotspot.classList.toggle("correct", hotspot.dataset.target === targetId);
+  });
+  elements.anatomyCues.forEach((cue) => {
+    cue.classList.toggle("correct", cue.dataset.cue === targetId);
   });
   elements.hotspotLabels.forEach((label) => {
     label.classList.toggle("correct", label.dataset.label === targetId);
@@ -863,8 +885,14 @@ function showCompletion() {
   elements.completionCopy.textContent = `Final score: ${state.score}. Buzzes: ${state.buzzes}. You mapped access, spacers, fixation, discs, biologics, fracture repair, SI fixation, replacement bodies, deformity systems, and navigation.`;
   elements.completionPanel.hidden = false;
   elements.hotspots.forEach((hotspot) => {
-    hotspot.disabled = true;
+    hotspot.setAttribute("aria-disabled", "true");
+    if ("disabled" in hotspot) {
+      hotspot.disabled = true;
+    }
     hotspot.classList.remove("correct", "wrong");
+  });
+  elements.anatomyCues.forEach((cue) => {
+    cue.classList.remove("correct", "wrong");
   });
   setFeedback("Case complete. Restart to reshuffle the tray.");
   elements.nextButton.hidden = true;

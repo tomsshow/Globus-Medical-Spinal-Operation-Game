@@ -201,38 +201,33 @@ button {
 }
 
 .hotspot {
-  --size: 46px;
+  --w: 48px;
+  --h: 48px;
+  --r: 50%;
   position: absolute;
   left: calc(var(--x) * 1%);
   top: calc(var(--y) * 1%);
-  width: var(--size);
-  height: var(--size);
+  width: var(--w);
+  height: var(--h);
   padding: 0;
   border: 0;
-  border-radius: 50%;
+  border-radius: var(--r);
   background: transparent;
+  box-shadow: none;
   color: var(--ink);
   cursor: pointer;
   transform: translate(-50%, -50%);
   z-index: 4;
+  transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.hotspot:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .hotspot:focus-visible {
   outline: 4px solid var(--blue);
   outline-offset: 4px;
-}
-
-.cavity {
-  position: absolute;
-  inset: 0;
-  border: 3px solid #7c1023;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 50% 50%, #5b0717 0 35%, transparent 36%),
-    radial-gradient(circle at 50% 50%, #d9eff9 38%, #b71934 63%, #7c1023 64%);
-  box-shadow:
-    inset 0 5px 10px rgba(0, 0, 0, 0.45),
-    0 4px 0 rgba(16, 48, 74, 0.32);
 }
 
 .hotspot-label {
@@ -251,7 +246,7 @@ button {
   line-height: 1.1;
   pointer-events: none;
   text-align: center;
-  z-index: 3;
+  z-index: 5;
 }
 
 .hotspot-label::before {
@@ -263,6 +258,49 @@ button {
   border-radius: 50%;
   background: var(--red);
   vertical-align: 1px;
+}
+
+.cue-shell {
+  stroke: var(--red);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 5px rgba(183, 25, 52, 0.18));
+}
+
+[data-cue].correct .cue-shell,
+.cue-shell.correct {
+  stroke: var(--green);
+  filter: drop-shadow(0 0 7px rgba(22, 134, 95, 0.35));
+}
+
+[data-cue].wrong .cue-shell,
+.cue-shell.wrong {
+  stroke: var(--red-dark);
+  filter: drop-shadow(0 0 7px rgba(183, 25, 52, 0.35));
+}
+
+.navigation-mark {
+  stroke: var(--red);
+  stroke-width: 2.2;
+}
+
+.navigation-dot {
+  fill: var(--red);
+}
+
+[data-cue].correct .navigation-mark {
+  stroke: var(--green);
+}
+
+[data-cue].correct .navigation-dot {
+  fill: var(--green);
+}
+
+[data-cue].wrong .navigation-mark {
+  stroke: var(--red-dark);
+}
+
+[data-cue].wrong .navigation-dot {
+  fill: var(--red-dark);
 }
 
 .hotspot-label.correct {
@@ -279,17 +317,12 @@ button {
   background: #fff0ec;
 }
 
-.hotspot.correct .cavity {
-  background:
-    radial-gradient(circle at 50% 50%, #145d36 0 35%, transparent 36%),
-    radial-gradient(circle at 50% 50%, #e6ffe9 38%, var(--green) 63%, #17643a 64%);
-  box-shadow: 0 0 0 7px rgba(58, 155, 90, 0.22), inset 0 5px 10px rgba(0, 0, 0, 0.35);
+.hotspot.correct {
+  background: rgba(236, 255, 240, 0.12);
 }
 
-.hotspot.wrong .cavity {
-  background:
-    radial-gradient(circle at 50% 50%, #53111b 0 35%, transparent 36%),
-    radial-gradient(circle at 50% 50%, #ffd1c7 38%, var(--red) 63%, var(--red-dark) 64%);
+.hotspot.wrong {
+  background: rgba(255, 240, 236, 0.12);
   animation: wrongShake 0.32s ease;
 }
 
@@ -512,7 +545,7 @@ button {
 
 .controls {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -520,9 +553,9 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 9px;
   min-height: 44px;
-  padding: 9px 10px;
+  padding: 10px 14px;
   border: 2px solid var(--line);
   border-radius: 8px;
   background: #ffffff;
@@ -530,6 +563,11 @@ button {
   font-weight: 850;
   cursor: pointer;
   box-shadow: 0 4px 0 rgba(16, 48, 74, 0.2);
+}
+
+.tool-button > span:last-child {
+  padding-inline: 2px;
+  white-space: nowrap;
 }
 
 .tool-button:disabled {
@@ -577,6 +615,12 @@ button {
 
 .tool-button.primary {
   background: var(--teal);
+  color: #ffffff;
+}
+
+.tool-button.next-action {
+  border-color: var(--green);
+  background: var(--green);
   color: #ffffff;
 }
 
@@ -726,10 +770,13 @@ button {
 @keyframes wrongShake {
   0%,
   100% {
-    transform: translateX(0);
+    transform: translate(-50%, -50%);
   }
-  50% {
-    transform: translateX(3px);
+  35% {
+    transform: translate(calc(-50% - 2px), -50%);
+  }
+  70% {
+    transform: translate(calc(-50% + 2px), -50%);
   }
 }
 
@@ -845,13 +892,18 @@ button {
     width: min(100%, 340px);
   }
 
-  .hotspot {
-    --size: 40px;
+  .hotspot-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    max-height: calc(2 * 0.66rem * 1.1 + 12px);
+    overflow: hidden;
+    font-size: 0.66rem;
   }
 
-  .hotspot-label {
-    width: 96px;
-    font-size: 0.66rem;
+  .hotspot-label::before {
+    display: none;
   }
 
   .product-visual {
@@ -927,13 +979,12 @@ button {
     width: 74px;
     padding: 3px 4px;
     border-width: 1px;
+    max-height: calc(2 * 0.5rem * 1.05 + 6px);
     font-size: 0.5rem;
     line-height: 1.05;
   }
 
   .hotspot-label::before {
-    width: 5px;
-    height: 5px;
-    margin-right: 3px;
+    display: none;
   }
 }
