@@ -486,6 +486,7 @@ const state = {
 };
 
 const maxAttempts = 3;
+const defaultBoardPromptTitle = "Place the product family";
 const hapticPatterns = {
   correct: [24, 32, 24],
   wrong: 75,
@@ -499,6 +500,7 @@ const elements = {
   scoreStat: document.querySelector("#scoreStat"),
   streakStat: document.querySelector("#streakStat"),
   buzzStat: document.querySelector("#buzzStat"),
+  boardPromptTitle: document.querySelector("#boardPromptTitle"),
   familyPill: document.querySelector("#familyPill"),
   productName: document.querySelector("#productName"),
   productVisual: document.querySelector("#productVisual"),
@@ -555,6 +557,32 @@ function playHaptic(patternName) {
 
 function isMobileLayout() {
   return window.matchMedia("(max-width: 940px)").matches;
+}
+
+function compactTaskName(card) {
+  if (card.product.length <= 24) return card.product;
+
+  const firstProductName = card.product.split(/,|\sand\s/)[0].trim();
+  if (firstProductName.length > 0 && firstProductName.length <= 18) {
+    return firstProductName;
+  }
+
+  if (card.examples[0]) {
+    return card.examples[0];
+  }
+
+  return "this product";
+}
+
+function updateBoardPromptTitle(card = currentCard()) {
+  if (!card || !elements.completionPanel.hidden) {
+    elements.boardPromptTitle.textContent = defaultBoardPromptTitle;
+    return;
+  }
+
+  elements.boardPromptTitle.textContent = isMobileLayout()
+    ? `Place ${compactTaskName(card)}`
+    : defaultBoardPromptTitle;
 }
 
 function scrollToPrompt() {
@@ -693,7 +721,8 @@ function renderCard(options = {}) {
   elements.productClue.textContent = card.clue;
   elements.productExamples.innerHTML = card.examples.map((example) => `<span>${example}</span>`).join("");
   renderAttempts();
-  setFeedback("Choose the matching anatomy slot on the board.");
+  updateBoardPromptTitle(card);
+  setFeedback(`Place ${card.product} on the matching anatomy slot.`);
   renderStats();
   if (options.scrollToPrompt) {
     scrollToPrompt();
@@ -844,6 +873,7 @@ function showCompletion() {
   elements.hintButton.disabled = true;
   elements.skipButton.disabled = true;
   elements.pulseLight.classList.remove("correct", "wrong");
+  updateBoardPromptTitle();
   renderStats();
 }
 
@@ -877,7 +907,10 @@ elements.nextButton.addEventListener("click", nextCard);
 elements.restartButton.addEventListener("click", () => restartGame({ scrollToPrompt: true }));
 elements.playAgainButton.addEventListener("click", () => restartGame({ scrollToPrompt: true }));
 window.addEventListener("scroll", updateFloatingFeedback, { passive: true });
-window.addEventListener("resize", updateFloatingFeedback);
+window.addEventListener("resize", () => {
+  updateBoardPromptTitle();
+  updateFloatingFeedback();
+});
 
 renderLegend();
 setupLegendDrawer();

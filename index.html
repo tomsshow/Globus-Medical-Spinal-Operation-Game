@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Spine Signal Mini Game</title>
-    <link rel="stylesheet" href="styles.css?v=20260512-scroll-feedback">
+    <link rel="stylesheet" href="styles.css?v=20260512-product-prompts">
   </head>
   <body>
     <main class="game-shell">
@@ -38,7 +38,7 @@
           <div class="board-title">
             <div>
               <p class="eyebrow">Anatomy board</p>
-              <h2>Place the product family</h2>
+              <h2 id="boardPromptTitle">Place the product family</h2>
             </div>
             <div class="pulse-light" id="pulseLight" aria-hidden="true"></div>
           </div>
@@ -54,8 +54,8 @@
                   <stop offset="100%" stop-color="#d8c5a6"></stop>
                 </linearGradient>
                 <linearGradient id="boardWell" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#eef8f7"></stop>
-                  <stop offset="100%" stop-color="#c7dde1"></stop>
+                  <stop offset="0%" stop-color="#f5fbff"></stop>
+                  <stop offset="100%" stop-color="#d5e8f3"></stop>
                 </linearGradient>
                 <linearGradient id="spineFill" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0%" stop-color="#f8fafc"></stop>
@@ -63,13 +63,13 @@
                 </linearGradient>
               </defs>
 
-              <rect x="14" y="14" width="392" height="692" rx="22" fill="#f8d56a" stroke="#61373b" stroke-width="8"></rect>
-              <rect x="32" y="32" width="356" height="656" rx="18" fill="#fef3d5" stroke="#bd5b48" stroke-width="3" stroke-dasharray="10 8"></rect>
+              <rect x="14" y="14" width="392" height="692" rx="22" fill="#0a6fae" stroke="#164f78" stroke-width="8"></rect>
+              <rect x="32" y="32" width="356" height="656" rx="18" fill="#ffffff" stroke="#b71934" stroke-width="3" stroke-dasharray="10 8"></rect>
 
               <g filter="url(#softShadow)">
-                <rect x="62" y="58" width="296" height="616" rx="34" fill="#d9dfe2" stroke="#4f3a42" stroke-width="5"></rect>
-                <rect x="82" y="82" width="256" height="568" rx="28" fill="url(#boardWell)" stroke="#82959b" stroke-width="3"></rect>
-                <path d="M106 648 H314" stroke="#5a4249" stroke-width="4" stroke-linecap="round" opacity="0.45"></path>
+                <rect x="62" y="58" width="296" height="616" rx="34" fill="#d8e5ed" stroke="#102332" stroke-width="5"></rect>
+                <rect x="82" y="82" width="256" height="568" rx="28" fill="url(#boardWell)" stroke="#7fa6bb" stroke-width="3"></rect>
+                <path d="M106 648 H314" stroke="#164f78" stroke-width="4" stroke-linecap="round" opacity="0.45"></path>
               </g>
 
               <g aria-hidden="true">
@@ -240,15 +240,6 @@
               </span>
               <span>Hint</span>
             </button>
-            <button class="tool-button later-action" type="button" id="laterButton">
-              <span class="button-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="9"></circle>
-                  <path d="M12 7v5l3 2"></path>
-                </svg>
-              </span>
-              <span>Later</span>
-            </button>
             <button class="tool-button skip-action" type="button" id="skipButton">
               <span class="button-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24">
@@ -258,6 +249,24 @@
               </span>
               <span>Skip</span>
             </button>
+            <button class="tool-button restart-action" type="button" id="restartButton">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M9 14 4 9l5-5"></path>
+                  <path d="M4 9h10a6 6 0 0 1 6 6v3"></path>
+                </svg>
+              </span>
+              <span>Restart</span>
+            </button>
+            <button class="tool-button later-action" type="button" id="laterButton">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7v5l3 2"></path>
+                </svg>
+              </span>
+              <span>Later</span>
+            </button>
             <button class="tool-button primary next-action" type="button" id="nextButton" hidden>
               <span class="button-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24">
@@ -266,15 +275,6 @@
                 </svg>
               </span>
               <span>Next</span>
-            </button>
-            <button class="tool-button restart-action" type="button" id="restartButton">
-              <span class="button-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24">
-                  <path d="M3 12a9 9 0 1 0 3-6.7"></path>
-                  <path d="M3 4v6h6"></path>
-                </svg>
-              </span>
-              <span>Restart</span>
             </button>
           </div>
 
@@ -297,6 +297,6 @@
       <p class="disclaimer">Educational game only. It simplifies product families and anatomy and is not medical advice.</p>
     </main>
 
-    <script src="app.js?v=20260512-scroll-feedback"></script>
+    <script src="app.js?v=20260512-product-prompts"></script>
   </body>
 </html>
